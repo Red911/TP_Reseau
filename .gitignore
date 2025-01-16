@@ -16,6 +16,17 @@
 *.dylib
 *.dll
 
+# Ignorer les fichiers générés automatiquement par Unreal Engine
+/Saved/*
+/Intermediate/*
+/DerivedDataCache/*
+*.log
+*.tmp
+
+# Ne pas ignorer les DLL spécifiques dans les répertoires suivants
+!Binaries/**/*.dll
+!Plugins/**/*.dll
+
 # Fortran module files
 *.mod
 
