@@ -44,9 +44,16 @@ class ATP_ReseauCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
 
+	/** Look Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* AimingAction;
+
 public:
 	ATP_ReseauCharacter();
-	
+
+
+private:
+	bool bIsAiming;
 
 protected:
 
@@ -55,6 +62,8 @@ protected:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+
+	void Aiming(const FInputActionValue& Value);
 			
 
 protected:
@@ -69,5 +78,10 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	UFUNCTION(BlueprintCallable, Category = Aiming)
+	FORCEINLINE bool GetIsAiming() const { return bIsAiming; }
+	UFUNCTION(BlueprintCallable, Category = Aiming)
+	FORCEINLINE void SetIsAiming(const bool value) { bIsAiming = value; }
 };
 

@@ -86,6 +86,10 @@ void ATP_ReseauCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ATP_ReseauCharacter::Look);
+
+		//Aiming
+		EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Triggered, this, &ATP_ReseauCharacter::Aiming);
+		EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Completed, this, &ATP_ReseauCharacter::Aiming);
 	}
 	else
 	{
@@ -126,5 +130,20 @@ void ATP_ReseauCharacter::Look(const FInputActionValue& Value)
 		// add yaw and pitch input to controller
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
+	}
+}
+
+void ATP_ReseauCharacter::Aiming(const FInputActionValue& Value)
+{
+	SetIsAiming(Value.Get<bool>());
+
+	// Optionnel : Affiche dans le log pour déboguer
+	if (bIsAiming)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Aiming: True (Button Held)"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("Aiming: False (Button Released)"));
 	}
 }
