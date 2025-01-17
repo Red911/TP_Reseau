@@ -11,6 +11,7 @@ class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
+class UNiagaraSystem;
 struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
@@ -44,16 +45,27 @@ class ATP_ReseauCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
 
-	/** Look Input Action */
+	/** Aim Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* AimingAction;
+
+	/** Shoot Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* ShootingAction;
 
 public:
 	ATP_ReseauCharacter();
 
-
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UNiagaraSystem> SpellNS;
+	
 private:
+
+	UPROPERTY(ReplicatedUsing = OnRep_IsAiming)
 	bool bIsAiming;
+
+	
+	
 
 protected:
 
@@ -64,11 +76,15 @@ protected:
 	void Look(const FInputActionValue& Value);
 
 	void Aiming(const FInputActionValue& Value);
+
+	void Shoot(const FInputActionValue& Value);
 			
 
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
 	// To add mapping context
 	virtual void BeginPlay();
@@ -83,5 +99,18 @@ public:
 	FORCEINLINE bool GetIsAiming() const { return bIsAiming; }
 	UFUNCTION(BlueprintCallable, Category = Aiming)
 	FORCEINLINE void SetIsAiming(const bool value) { bIsAiming = value; }
+
+	// Server Function to set Aiming State
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerSetIsAiming(const bool value);
+
+	UFUNCTION()
+	void OnRep_IsAiming();
+
+	
+
+	
 };
+
+
 

@@ -1,15 +1,18 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "TP_ReseauCharacter.h"
-#include "Engine/LocalPlayer.h"
-#include "Camera/CameraComponent.h"
-#include "Components/CapsuleComponent.h"
-#include "GameFramework/CharacterMovementComponent.h"
-#include "GameFramework/SpringArmComponent.h"
-#include "GameFramework/Controller.h"
+
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "NiagaraFunctionLibrary.h"
+#include "Camera/CameraComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "Engine/LocalPlayer.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/Controller.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "Net/UnrealNetwork.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -52,6 +55,8 @@ ATP_ReseauCharacter::ATP_ReseauCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+
+	bReplicates = true;
 }
 
 void ATP_ReseauCharacter::BeginPlay()
@@ -59,6 +64,10 @@ void ATP_ReseauCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
 }
+
+
+
+
 
 //////////////////////////////////////////////////////////////////////////
 // Input
@@ -87,14 +96,25 @@ void ATP_ReseauCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ATP_ReseauCharacter::Look);
 
-		//Aiming
+		// Aiming
 		EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Triggered, this, &ATP_ReseauCharacter::Aiming);
 		EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Completed, this, &ATP_ReseauCharacter::Aiming);
+
+		// Shooting
+		EnhancedInputComponent->BindAction(ShootingAction, ETriggerEvent::Triggered, this, &ATP_ReseauCharacter::Shoot);
 	}
 	else
 	{
 		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
+}
+
+void ATP_ReseauCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// Ajoute ici les propriétés à répliquer
+	DOREPLIFETIME(ATP_ReseauCharacter, bIsAiming);
 }
 
 void ATP_ReseauCharacter::Move(const FInputActionValue& Value)
@@ -135,15 +155,66 @@ void ATP_ReseauCharacter::Look(const FInputActionValue& Value)
 
 void ATP_ReseauCharacter::Aiming(const FInputActionValue& Value)
 {
-	SetIsAiming(Value.Get<bool>());
+	
+	if (HasAuthority())// If we are the server
+	{
+		SetIsAiming(Value.Get<bool>());
+		OnRep_IsAiming();
+	}
+	else //if we are the client
+	{
+		ServerSetIsAiming(Value.Get<bool>()); // Call the server to change the state
+	}
+}
 
-	// Optionnel : Affiche dans le log pour déboguer
+void ATP_ReseauCharacter::Shoot(const FInputActionValue& Value)
+{
+	if (Value.Get<bool>() == true)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Input Pressed"));
+		if (SpellNS)
+		{
+			UE_LOG(LogTemp, Log, TEXT("Spell != nullptr"));
+			TObjectPtr<USceneComponent> AttachComponent = GetMesh();
+
+			if (AttachComponent)
+			{
+				UE_LOG(LogTemp, Log, TEXT("AttachComp != nullptr"));
+				TObjectPtr<UNiagaraComponent> NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAttached(
+				SpellNS,
+				AttachComponent,
+				"CastSocket",
+				FVector::ZeroVector,
+				FRotator::ZeroRotator,
+				EAttachLocation::KeepRelativeOffset,
+				true
+				);
+			}
+		}
+	}
+}
+
+void ATP_ReseauCharacter::ServerSetIsAiming_Implementation(const bool value)
+{
+	bIsAiming = value;
+	OnRep_IsAiming(); //call the notification function
+}
+
+bool ATP_ReseauCharacter::ServerSetIsAiming_Validate(const bool value)
+{
+	return true;
+}
+
+void ATP_ReseauCharacter::OnRep_IsAiming()
+{
 	if (bIsAiming)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Aiming: True (Button Held)"));
+		UE_LOG(LogTemp, Log, TEXT("ADS activé"));
+		// Activer une animation de visée, ajuster la FOV, etc.
 	}
 	else
 	{
-		UE_LOG(LogTemp, Log, TEXT("Aiming: False (Button Released)"));
+		UE_LOG(LogTemp, Log, TEXT("ADS désactivé"));
+		// Désactiver la visée
 	}
 }
