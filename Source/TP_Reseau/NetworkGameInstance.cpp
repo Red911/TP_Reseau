@@ -2,3 +2,61 @@
 
 
 #include "NetworkGameInstance.h"
+
+#include "Kismet/GameplayStatics.h"
+
+
+UNetworkGameInstance::UNetworkGameInstance()
+{
+	PlayerProfileSlot = "PlayerProfile_Slot";
+}
+
+void UNetworkGameInstance::CheckForSavedProfile()
+{
+	if(UGameplayStatics::DoesSaveGameExist(PlayerProfileSlot, 0))
+	{
+		LoadProfile();
+	}
+	else
+	{
+		SaveProfile();
+	}
+}
+
+void UNetworkGameInstance::SaveProfile()
+{
+	
+	if (PlayerProfile != nullptr)
+	{
+		PlayerProfile->PlayerProfileStruct = PlayerProfileInfo;
+	}
+	else
+	{
+		PlayerProfile = Cast<USGPlayerProfile>(UGameplayStatics::CreateSaveGameObject(USGPlayerProfile::StaticClass()));
+		PlayerProfile->PlayerProfileStruct = PlayerProfileInfo;
+
+	}
+	
+	UGameplayStatics::SaveGameToSlot(PlayerProfile, PlayerProfileSlot, 0);
+	
+
+	
+}
+
+void UNetworkGameInstance::LoadProfile()
+{
+	USaveGame* LoadedSaveGame = UGameplayStatics::LoadGameFromSlot(PlayerProfileSlot, 0);
+	if(LoadedSaveGame)
+	{
+		
+
+		USGPlayerProfile* playerprofile = Cast<USGPlayerProfile>(LoadedSaveGame);
+		if(playerprofile)
+		{
+			PlayerProfileInfo = playerprofile->PlayerProfileStruct;
+			UE_LOG(LogTemp, Warning, TEXT("Player Profile"));
+		}
+	}
+
+	
+}
