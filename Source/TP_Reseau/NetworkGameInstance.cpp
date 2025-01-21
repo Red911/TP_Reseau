@@ -11,6 +11,7 @@
 UNetworkGameInstance::UNetworkGameInstance()
 {
 	PlayerProfileSlot = "PlayerProfile_Slot";
+	
 }
 
 void UNetworkGameInstance::CheckForSavedProfile()
@@ -68,6 +69,20 @@ USGPlayerProfile* UNetworkGameInstance::LoadProfile()
 void UNetworkGameInstance::CreateMultiplayerSession()
 {
 	//IOnlineSession::CreateSession();
+}
+
+void UNetworkGameInstance::OnCreateSessionComplete(FName SessionName, bool bSuccess)
+{
+}
+
+bool UNetworkGameInstance::HostSession(TSharedPtr<const FUniqueNetId> UniqueId, FName SessionName, bool bIsLan,
+                                       bool bIsPresence, int32 MaxNumPlayers)
+{
+	return true;
+}
+
+void UNetworkGameInstance::OnStartSessionComplete(FName SessionName, bool bSuccess)
+{
 }
 
 bool UNetworkGameInstance::ChangeConnectionType()
