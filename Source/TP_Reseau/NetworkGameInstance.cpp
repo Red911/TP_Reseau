@@ -4,6 +4,8 @@
 #include "NetworkGameInstance.h"
 
 #include "Kismet/GameplayStatics.h"
+#include "OnlineSubsystem.h"
+#include "OnlineSessionSettings.h"
 
 
 UNetworkGameInstance::UNetworkGameInstance()
@@ -15,7 +17,7 @@ void UNetworkGameInstance::CheckForSavedProfile()
 {
 	if(UGameplayStatics::DoesSaveGameExist(PlayerProfileSlot, 0))
 	{
-		LoadProfile();
+		 PlayerProfile = LoadProfile();
 	}
 	else
 	{
@@ -43,7 +45,7 @@ void UNetworkGameInstance::SaveProfile()
 	
 }
 
-void UNetworkGameInstance::LoadProfile()
+USGPlayerProfile* UNetworkGameInstance::LoadProfile()
 {
 	USaveGame* LoadedSaveGame = UGameplayStatics::LoadGameFromSlot(PlayerProfileSlot, 0);
 	if(LoadedSaveGame)
@@ -56,7 +58,20 @@ void UNetworkGameInstance::LoadProfile()
 			PlayerProfileInfo = playerprofile->PlayerProfileStruct;
 			UE_LOG(LogTemp, Warning, TEXT("Player Profile"));
 		}
+
+		return playerprofile;
 	}
 
-	
+	return nullptr;
+}
+
+void UNetworkGameInstance::CreateMultiplayerSession()
+{
+	//IOnlineSession::CreateSession();
+}
+
+bool UNetworkGameInstance::ChangeConnectionType()
+{
+	isLanConnection = !isLanConnection;
+	return isLanConnection;
 }

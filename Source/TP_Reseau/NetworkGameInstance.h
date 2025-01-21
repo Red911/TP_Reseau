@@ -19,20 +19,29 @@ class TP_RESEAU_API UNetworkGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
 	UNetworkGameInstance();
+
+	// Public Variable
 	public:
 	UPROPERTY(BlueprintReadWrite)
 	FPlayerProfile PlayerProfileInfo;
 
 	UPROPERTY(BlueprintReadWrite)
 	TObjectPtr<USGPlayerProfile> PlayerProfile;
-	private:
 
+	UPROPERTY(BlueprintReadOnly)
+	bool isLanConnection;
+
+	// Private Variable
+	private:
 	FString PlayerProfileSlot;
 
-	
-	
-
+	//Public Function
 	public:
+
+	UFUNCTION(BlueprintCallable)
+	bool ChangeConnectionType();
+
+	//===== Player Profile =====
 	UFUNCTION(BlueprintCallable)
 	void CheckForSavedProfile();
 
@@ -40,5 +49,11 @@ class TP_RESEAU_API UNetworkGameInstance : public UGameInstance
 	void SaveProfile();
 
 	UFUNCTION(BlueprintCallable)
-	void LoadProfile();
+	USGPlayerProfile* LoadProfile();
+
+	//==========================
+
+	UFUNCTION(BlueprintCallable)
+	void CreateMultiplayerSession();
+	
 };
