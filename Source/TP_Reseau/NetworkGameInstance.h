@@ -3,13 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "OnlineSessionSettings.h"
 #include "Engine/GameInstance.h"
 #include "SGPlayerProfile.h"
+#include "Interfaces/OnlineSessionInterface.h"
 #include "NetworkGameInstance.generated.h"
 
-/**
- * 
- */
+
 class UUserWidget;
 
 
@@ -19,18 +19,7 @@ class TP_RESEAU_API UNetworkGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
 	UNetworkGameInstance();
-
-	//========Delegate========
-	/* Delegate called when session created */
-	DECLARE_DELEGATE(FOnCreateSessionCompleteDelegateSignature);
-	FOnCreateSessionCompleteDelegateSignature OnCreateSessionCompleteDelegate;
-	/* Delegate called when session started */
-	DECLARE_DELEGATE(FOnStartSessionCompleteDelegate);
-	FOnStartSessionCompleteDelegate OnStartSessionCompleteDelegate;
-
-	/** Handles to registered delegates for creating/starting a session */
-	FDelegateHandle OnCreateSessionCompleteDelegateHandle;
-	FDelegateHandle OnStartSessionCompleteDelegateHandle;
+	
 
 	// Public Variable
 	public:
@@ -42,18 +31,34 @@ class TP_RESEAU_API UNetworkGameInstance : public UGameInstance
 
 	UPROPERTY(BlueprintReadOnly)
 	bool isLanConnection;
+	
+	UPROPERTY(BlueprintReadWrite)
+	int32 MaxNumberOfPlayer;
+	
+	UPROPERTY(BlueprintReadWrite)
+	FName SessionName = "MySession";
+
+	// TSharedPtr<class FOnlineSessionSettings> SessionSettings;
+	//
+	// FOnCreateSessionCompleteDelegate OnCreateSessionCompleteDelegate;
+	// FDelegateHandle OnCreateSessionCompleteDelegateHandle;
+	//
+	// FDelegateHandle OnStartSessionCompleteDelegateHandle;
+	// FOnStartSessionCompleteDelegate OnStartSessionCompleteDelegate;
+	
 
 	// Private Variable
 	private:
 	FString PlayerProfileSlot;
+	// IOnlineSessionPtr SessionInterface;
+	// TSharedPtr<FOnlineSessionSearch> SessionSearch;
+	
 
-	TSharedPtr<class FOnlineSessionSettings> SessionSettings;
 
 	//Public Function
 	public:
 
-	UFUNCTION(BlueprintCallable)
-	bool ChangeConnectionType();
+
 
 	//===== Player Profile =====
 	UFUNCTION(BlueprintCallable)
@@ -67,27 +72,26 @@ class TP_RESEAU_API UNetworkGameInstance : public UGameInstance
 
 	//==========================
 
-	UFUNCTION(BlueprintCallable)
-	void CreateMultiplayerSession();
+	//==== Create / Join Session ==================
 
-	protected:
-	virtual void OnCreateSessionComplete(FName SessionName, bool bSuccess);
+	/*
+	bool HostSession(TSharedPtr<const FUniqueNetId> UserId, FName SessionName, bool bIsLAN, bool bIsPresence, int32 MaxNumPlayers);
 	
+	UFUNCTION(BlueprintCallable, Category = "Network")
+	void CreateMultiPlayerSession();
 
-	//Private Function
+	UFUNCTION(BlueprintCallable, Category = "Network")
+	bool JoinSession();
+
 	private:
-	/**
-	*	Function to host a game
-	*
-	*	@Param		UserID			User that started the request
-	*	@Param		SessionName		Name of the Session
-	*	@Param		bIsLAN			Is this is LAN Game?
-	*	@Param		bIsPresence		"Is the Session to create a presence Session"
-	*	@Param		MaxNumPlayers	        Number of Maximum allowed players on this "Session" (Server)
+	virtual void OnCreateSessionComplete(FName Name, bool bWasSuccessful);
+	void OnStartOnlineGameComplete(FName SessionName, bool bWasSuccessful);
+	
+	void OnJoinSessionComplete(FName Name, EOnJoinSessionCompleteResult::Type Result);
 	*/
-		bool HostSession(TSharedPtr<const FUniqueNetId> UniqueId, FName SessionName, bool bIsLan, bool bIsPresence, int32 MaxNumPlayers);
 
-		void OnStartSessionComplete(FName SessionName, bool bSuccess);
+	//===================================================
+	
 	
 	
 };
