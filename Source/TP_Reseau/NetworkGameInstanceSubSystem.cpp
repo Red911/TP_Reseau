@@ -23,3 +23,10 @@ void UNetworkGameInstanceSubSystem::JoinGame(FString IP)
 		PC->ClientTravel(IP, TRAVEL_Absolute);
 	}
 }
+
+void UNetworkGameInstanceSubSystem::TravelToMap(int32 nConnectedPlayers, FString LevelName)
+{
+	NumConnectedPlayers = nConnectedPlayers;
+
+	GetWorld()->ServerTravel(LevelName, TRAVEL_Absolute);
+}

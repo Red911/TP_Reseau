@@ -17,6 +17,9 @@ class TP_RESEAU_API UNetworkGameInstanceSubSystem : public UGameInstanceSubsyste
 	//Public Variable
 	public:
 
+	UPROPERTY(BlueprintReadWrite)
+	int32 NumConnectedPlayers;
+
 	//Private Variable
 	private:
 
@@ -28,6 +31,9 @@ class TP_RESEAU_API UNetworkGameInstanceSubSystem : public UGameInstanceSubsyste
 
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject", AdvancedDisplay = "2"), Category = "Network Game|Gameplay")
 	void JoinGame(FString IP);
+
+	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject", AdvancedDisplay = "2"), Category = "Network Game|Gameplay")
+	void TravelToMap(int32 nConnectedPlayers, FString LevelName);
 	
 	//Private Function
 	private:
