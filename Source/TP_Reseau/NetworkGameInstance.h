@@ -38,23 +38,10 @@ class TP_RESEAU_API UNetworkGameInstance : public UGameInstance
 	UPROPERTY(BlueprintReadWrite)
 	FName SessionName = "MySession";
 
-	// TSharedPtr<class FOnlineSessionSettings> SessionSettings;
-	//
-	// FOnCreateSessionCompleteDelegate OnCreateSessionCompleteDelegate;
-	// FDelegateHandle OnCreateSessionCompleteDelegateHandle;
-	//
-	// FDelegateHandle OnStartSessionCompleteDelegateHandle;
-	// FOnStartSessionCompleteDelegate OnStartSessionCompleteDelegate;
-	
-
 	// Private Variable
 	private:
 	FString PlayerProfileSlot;
-	// IOnlineSessionPtr SessionInterface;
-	// TSharedPtr<FOnlineSessionSearch> SessionSearch;
 	
-
-
 	//Public Function
 	public:
 
@@ -72,26 +59,5 @@ class TP_RESEAU_API UNetworkGameInstance : public UGameInstance
 
 	//==========================
 
-	//==== Create / Join Session ==================
-
-	/*
-	bool HostSession(TSharedPtr<const FUniqueNetId> UserId, FName SessionName, bool bIsLAN, bool bIsPresence, int32 MaxNumPlayers);
-	
-	UFUNCTION(BlueprintCallable, Category = "Network")
-	void CreateMultiPlayerSession();
-
-	UFUNCTION(BlueprintCallable, Category = "Network")
-	bool JoinSession();
-
-	private:
-	virtual void OnCreateSessionComplete(FName Name, bool bWasSuccessful);
-	void OnStartOnlineGameComplete(FName SessionName, bool bWasSuccessful);
-	
-	void OnJoinSessionComplete(FName Name, EOnJoinSessionCompleteResult::Type Result);
-	*/
-
-	//===================================================
-	
-	
 	
 };
