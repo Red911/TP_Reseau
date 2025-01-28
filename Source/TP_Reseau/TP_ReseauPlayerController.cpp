@@ -2,7 +2,8 @@
 
 
 #include "TP_ReseauPlayerController.h"
-#include "Blueprint/WidgetBlueprintLibrary.h"
+#include "NetworkPlayerState.h"
+#include "TP_ReseauCharacter.h"
 
 
 ATP_ReseauPlayerController::ATP_ReseauPlayerController()
@@ -13,9 +14,22 @@ void ATP_ReseauPlayerController::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
-	if (IsLocalController())
+	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+
+	if (PlayerController)
 	{
-		UWidgetBlueprintLibrary::SetInputMode_GameOnly(this, false);
-		bShowMouseCursor = false;
+		ANetworkPlayerState* PS = PlayerController->GetPlayerState<ANetworkPlayerState>();
+		if (PS)
+		{
+			int32 PlayerSkinIndex = PS->GetPlayerSkinIndex();
+
+			ATP_ReseauCharacter* PlayerCharacter = Cast<ATP_ReseauCharacter>(GetCharacter());
+
+			if (PlayerCharacter)
+			{
+				PlayerCharacter->UpdateSkin(PlayerSkinIndex);
+			}
+			
+		}
 	}
 }

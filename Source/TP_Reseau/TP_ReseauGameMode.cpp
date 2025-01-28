@@ -12,4 +12,6 @@ ATP_ReseauGameMode::ATP_ReseauGameMode()
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;
 	}
+
+	bUseSeamlessTravel = true;
 }

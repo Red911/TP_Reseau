@@ -58,6 +58,9 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UNiagaraSystem> SpellNS;
+
+	UPROPERTY(EditAnywhere)
+	TArray<UMaterialInterface*> SkinMaterials;
 	
 private:
 
@@ -107,7 +110,8 @@ public:
 	UFUNCTION()
 	void OnRep_IsAiming();
 
-	
+	UFUNCTION()
+	void UpdateSkin(int32 Index);
 
 	
 };

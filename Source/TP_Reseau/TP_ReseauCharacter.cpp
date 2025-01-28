@@ -218,3 +218,12 @@ void ATP_ReseauCharacter::OnRep_IsAiming()
 		// Désactiver la visée
 	}
 }
+
+void ATP_ReseauCharacter::UpdateSkin(int32 Index)
+{
+	USkeletalMeshComponent* mesh = GetMesh();
+	if (mesh)
+	{
+		mesh->SetMaterial(0, SkinMaterials[Index]);
+	}
+}
