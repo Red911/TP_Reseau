@@ -5,6 +5,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "NetworkPlayerState.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -65,9 +66,11 @@ void ATP_ReseauCharacter::BeginPlay()
 	Super::BeginPlay();
 }
 
-
-
-
+void ATP_ReseauCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Input
@@ -115,6 +118,7 @@ void ATP_ReseauCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 
 	// Ajoute ici les propriétés à répliquer
 	DOREPLIFETIME(ATP_ReseauCharacter, bIsAiming);
+	DOREPLIFETIME(ATP_ReseauCharacter, SkinIndex);
 }
 
 void ATP_ReseauCharacter::Move(const FInputActionValue& Value)
@@ -210,20 +214,56 @@ void ATP_ReseauCharacter::OnRep_IsAiming()
 	if (bIsAiming)
 	{
 		UE_LOG(LogTemp, Log, TEXT("ADS activé"));
-		// Activer une animation de visée, ajuster la FOV, etc.
+		
 	}
 	else
 	{
 		UE_LOG(LogTemp, Log, TEXT("ADS désactivé"));
-		// Désactiver la visée
 	}
 }
 
-void ATP_ReseauCharacter::UpdateSkin(int32 Index)
+void ATP_ReseauCharacter::SetSkinIndex(int32 Index)
+{
+	if (HasAuthority())// If we are the server
+	{
+		ANetworkPlayerState* PS = Cast<ANetworkPlayerState>(GetPlayerState());
+
+		if (PS)
+		{
+			SkinIndex = Index;
+			OnRep_SkinIndex();
+		}
+	}
+	else //if we are the client
+	{
+		ServerSetSkinIndex(Index); // Call the server to change the state
+	}
+}
+
+void ATP_ReseauCharacter::OnRep_SkinIndex()
 {
 	USkeletalMeshComponent* mesh = GetMesh();
 	if (mesh)
 	{
-		mesh->SetMaterial(0, SkinMaterials[Index]);
+		mesh->SetMaterial(0, SkinMaterials[SkinIndex]);
 	}
 }
+
+void ATP_ReseauCharacter::ServerSetSkinIndex_Implementation(int32 Index)
+{
+	ANetworkPlayerState* PS = Cast<ANetworkPlayerState>(GetPlayerState());
+	if (PS)
+	{
+		SkinIndex = Index;
+		OnRep_SkinIndex();
+	}
+}
+
+bool ATP_ReseauCharacter::ServerSetSkinIndex_Validate(int32 Index)
+{
+	return true;
+}
+
+
+
+

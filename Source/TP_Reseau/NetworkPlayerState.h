@@ -29,7 +29,13 @@ class TP_RESEAU_API ANetworkPlayerState : public APlayerState
 	protected:
 		
 		UPROPERTY(Replicated, BlueprintReadOnly, Category = "PlayerState")
-		int32 PlayerMaterialIndex;
+		int32 PlayerMaterialIndex = 0;
+
+	// Used to copy properties from the current PlayerState to the passed one
+	virtual void CopyProperties(class APlayerState* PlayerState) override;
+
+	// Used to override the current PlayerState with the properties of the passed one
+	virtual void OverrideWith(class APlayerState* PlayerState) override;
 	
 		
 		virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;

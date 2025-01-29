@@ -27,6 +27,6 @@ void UNetworkGameInstanceSubSystem::JoinGame(FString IP)
 void UNetworkGameInstanceSubSystem::TravelToMap(int32 nConnectedPlayers, FString LevelName)
 {
 	NumConnectedPlayers = nConnectedPlayers;
-
-	GetWorld()->ServerTravel(LevelName, true);
+	
+	GetWorld()->ServerTravel(LevelName);
 }

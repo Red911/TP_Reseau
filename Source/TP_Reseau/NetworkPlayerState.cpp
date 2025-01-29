@@ -6,10 +6,6 @@
 
 ANetworkPlayerState::ANetworkPlayerState()
 {
-	
-	PlayerMaterialIndex = 0;
-
-	
 	bReplicates = true;
 }
 
@@ -21,6 +17,36 @@ int32 ANetworkPlayerState::GetPlayerSkinIndex() const
 void ANetworkPlayerState::SetPlayerSkinIndex(int32 value)
 {
 	PlayerMaterialIndex = value;
+}
+
+void ANetworkPlayerState::CopyProperties(class APlayerState* PlayerState)
+{
+	Super::CopyProperties(PlayerState);
+
+	if (PlayerState)
+	{
+		ANetworkPlayerState* NPS = Cast<ANetworkPlayerState>(PlayerState);
+
+		if (NPS)
+		{
+			NPS->PlayerMaterialIndex = PlayerMaterialIndex;
+		}
+	}
+}
+
+void ANetworkPlayerState::OverrideWith(class APlayerState* PlayerState)
+{
+	Super::OverrideWith(PlayerState);
+
+	if (PlayerState)
+	{
+		ANetworkPlayerState* NPS = Cast<ANetworkPlayerState>(PlayerState);
+
+		if (NPS)
+		{
+			PlayerMaterialIndex = NPS->PlayerMaterialIndex ;
+		}
+	}
 }
 
 void ANetworkPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

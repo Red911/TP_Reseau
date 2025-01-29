@@ -27,7 +27,7 @@ void ATP_ReseauPlayerController::BeginPlay()
 
 			if (PlayerCharacter)
 			{
-				PlayerCharacter->UpdateSkin(PlayerSkinIndex);
+				
 			}
 			
 		}

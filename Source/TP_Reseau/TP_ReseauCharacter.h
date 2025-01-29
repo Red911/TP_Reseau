@@ -67,7 +67,8 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_IsAiming)
 	bool bIsAiming;
 
-	
+	UPROPERTY(ReplicatedUsing = OnRep_SkinIndex)
+	int32 SkinIndex = 0;
 	
 
 protected:
@@ -92,6 +93,8 @@ protected:
 	// To add mapping context
 	virtual void BeginPlay();
 
+	virtual void Tick(float DeltaTime) override;
+
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
@@ -110,11 +113,23 @@ public:
 	UFUNCTION()
 	void OnRep_IsAiming();
 
+	UFUNCTION(BlueprintCallable)
+	void SetSkinIndex(int32 Index);
+
 	UFUNCTION()
-	void UpdateSkin(int32 Index);
+	void OnRep_SkinIndex();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerSetSkinIndex(int32 Index);
+	
+
+
+
 
 	
 };
+
+
 
 
 
