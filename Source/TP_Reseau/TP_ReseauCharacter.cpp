@@ -5,6 +5,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "NetworkGameInstance.h"
 #include "NetworkPlayerState.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
@@ -65,6 +66,21 @@ void ATP_ReseauCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
+
+	// ANetworkPlayerState* NPS = Cast<ANetworkPlayerState>(GetPlayerState());
+	//
+	// if (NPS)
+	// {
+	// 	SetSkinIndex(NPS->GetPlayerSkinIndex());
+	// }
+
+	UNetworkGameInstance* GI = Cast<UNetworkGameInstance>(GetGameInstance());
+	
+	if (GI)
+	{
+		SetSkinIndex(GI->GetPlayerSkinIndex());
+	}
+	
 }
 
 void ATP_ReseauCharacter::Tick(float DeltaTime)

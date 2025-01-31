@@ -2,11 +2,14 @@
 
 
 #include "NetworkPlayerState.h"
+
+#include "TP_ReseauCharacter.h"
 #include "Net/UnrealNetwork.h"
 
 ANetworkPlayerState::ANetworkPlayerState()
 {
 	bReplicates = true;
+	
 }
 
 int32 ANetworkPlayerState::GetPlayerSkinIndex() const
@@ -17,6 +20,12 @@ int32 ANetworkPlayerState::GetPlayerSkinIndex() const
 void ANetworkPlayerState::SetPlayerSkinIndex(int32 value)
 {
 	PlayerMaterialIndex = value;
+
+	ATP_ReseauCharacter* Player = Cast<ATP_ReseauCharacter>(GetOwner());
+	if (Player)
+	{
+		Player->SetSkinIndex(PlayerMaterialIndex);
+	}
 }
 
 void ANetworkPlayerState::CopyProperties(class APlayerState* PlayerState)
@@ -29,25 +38,12 @@ void ANetworkPlayerState::CopyProperties(class APlayerState* PlayerState)
 
 		if (NPS)
 		{
-			NPS->PlayerMaterialIndex = PlayerMaterialIndex;
+			//NPS->PlayerMaterialIndex = PlayerMaterialIndex;
+			NPS->SetPlayerSkinIndex(PlayerMaterialIndex);
 		}
 	}
 }
 
-void ANetworkPlayerState::OverrideWith(class APlayerState* PlayerState)
-{
-	Super::OverrideWith(PlayerState);
-
-	if (PlayerState)
-	{
-		ANetworkPlayerState* NPS = Cast<ANetworkPlayerState>(PlayerState);
-
-		if (NPS)
-		{
-			PlayerMaterialIndex = NPS->PlayerMaterialIndex ;
-		}
-	}
-}
 
 void ANetworkPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {

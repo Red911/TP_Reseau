@@ -6,8 +6,10 @@
 #include "Kismet/GameplayStatics.h"
 #include "OnlineSubsystem.h"
 #include "OnlineSessionSettings.h"
+#include "TP_ReseauCharacter.h"
 #include "GameFramework/PlayerState.h"
 #include "Interfaces/OnlineSessionInterface.h"
+#include "Net/UnrealNetwork.h"
 
 
 UNetworkGameInstance::UNetworkGameInstance()
@@ -16,6 +18,8 @@ UNetworkGameInstance::UNetworkGameInstance()
 
 	
 }
+
+
 
 
 void UNetworkGameInstance::CheckForSavedProfile()
@@ -70,4 +74,19 @@ USGPlayerProfile* UNetworkGameInstance::LoadProfile()
 	return nullptr;
 }
 
+int32 UNetworkGameInstance::GetPlayerSkinIndex() const
+{
+	return PlayerSkinIndex;
+}
+
+void UNetworkGameInstance::SetPlayerSkinIndex(int32 value)
+{
+	PlayerSkinIndex = value;
+
+	ATP_ReseauCharacter* Player = Cast<ATP_ReseauCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(),0));
+	if (Player)
+	{
+		Player->SetSkinIndex(PlayerSkinIndex);
+	}
+}
 

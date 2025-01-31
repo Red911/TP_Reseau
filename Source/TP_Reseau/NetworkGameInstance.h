@@ -19,7 +19,8 @@ class TP_RESEAU_API UNetworkGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
 	UNetworkGameInstance();
-	
+
+
 
 	// Public Variable
 	public:
@@ -38,6 +39,9 @@ class TP_RESEAU_API UNetworkGameInstance : public UGameInstance
 	UPROPERTY(BlueprintReadWrite)
 	FName SessionName = "MySession";
 
+	UPROPERTY(BlueprintReadOnly)
+	uint8 PlayerSkinIndex = 0;
+
 	// Private Variable
 	private:
 	FString PlayerProfileSlot;
@@ -45,6 +49,12 @@ class TP_RESEAU_API UNetworkGameInstance : public UGameInstance
 	//Public Function
 	public:
 
+	UFUNCTION(BlueprintCallable, Category = "PlayerState")
+	int32 GetPlayerSkinIndex() const;
+	
+		
+	UFUNCTION(BlueprintCallable, Category = "PlayerState")
+	void SetPlayerSkinIndex(int32 value);
 
 
 	//===== Player Profile =====
