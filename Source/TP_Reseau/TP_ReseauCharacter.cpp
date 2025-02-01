@@ -67,8 +67,8 @@ void ATP_ReseauCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
 
-	// ANetworkPlayerState* NPS = Cast<ANetworkPlayerState>(GetPlayerState());
-	//
+	ANetworkPlayerState* NPS = Cast<ANetworkPlayerState>(GetPlayerState());
+	
 	// if (NPS)
 	// {
 	// 	SetSkinIndex(NPS->GetPlayerSkinIndex());
