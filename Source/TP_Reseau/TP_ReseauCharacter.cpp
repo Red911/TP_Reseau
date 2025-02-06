@@ -121,7 +121,7 @@ void ATP_ReseauCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 		EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Completed, this, &ATP_ReseauCharacter::Aiming);
 
 		// Shooting
-		EnhancedInputComponent->BindAction(ShootingAction, ETriggerEvent::Triggered, this, &ATP_ReseauCharacter::Shoot);
+		//EnhancedInputComponent->BindAction(ShootingAction, ETriggerEvent::Triggered, this, &ATP_ReseauCharacter::Shoot);
 	}
 	else
 	{
