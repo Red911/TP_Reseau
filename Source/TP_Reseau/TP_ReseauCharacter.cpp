@@ -16,6 +16,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "LagCompensationComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -56,6 +57,9 @@ ATP_ReseauCharacter::ATP_ReseauCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
+	ProjectileRoot = CreateDefaultSubobject<USceneComponent>(TEXT("ProjectileRoot"));
+	ProjectileRoot->SetupAttachment(GetMesh(), "Weapon");
+
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 
@@ -86,6 +90,14 @@ void ATP_ReseauCharacter::BeginPlay()
 void ATP_ReseauCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	// if (isShooting)
+	// {
+	// 	FVector Location = ProjectileRoot->GetRelativeLocation();
+	// 	FRotator Rotation = FRotator::ZeroRotator;
+	// 	FActorSpawnParameters SpawnParams;
+	// 	GetWorld()->SpawnActor<AActor>(Bullet, Location, Rotation, SpawnParams);
+	// }
 	
 }
 
@@ -190,28 +202,25 @@ void ATP_ReseauCharacter::Aiming(const FInputActionValue& Value)
 
 void ATP_ReseauCharacter::Shoot(const FInputActionValue& Value)
 {
-	if (Value.Get<bool>() == true)
+	// if (Value.Get<bool>() == true)
+	// {
+	// 	if (HasAuthority())// If we are the server
+	// 	{
+	// 		SetIsShooting(!isShooting);
+	// 		OnRep_IsShooting();
+	// 	}
+	// 	else //if we are the client
+	// 	{
+	// 		ServerSetIsShooting(!isShooting); // Call the server to change the state
+	// 	}		
+	// }
+	if (isShooting)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Input Pressed"));
-		if (SpellNS)
-		{
-			UE_LOG(LogTemp, Log, TEXT("Spell != nullptr"));
-			TObjectPtr<USceneComponent> AttachComponent = GetMesh();
-
-			if (AttachComponent)
-			{
-				UE_LOG(LogTemp, Log, TEXT("AttachComp != nullptr"));
-				TObjectPtr<UNiagaraComponent> NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAttached(
-				SpellNS,
-				AttachComponent,
-				"CastSocket",
-				FVector::ZeroVector,
-				FRotator::ZeroRotator,
-				EAttachLocation::KeepRelativeOffset,
-				true
-				);
-			}
-		}
+		SetIsShooting(false);
+	}
+	else
+	{
+		SetIsShooting(true);
 	}
 }
 
@@ -239,6 +248,19 @@ void ATP_ReseauCharacter::OnRep_IsAiming()
 	}
 }
 
+void ATP_ReseauCharacter::OnRep_IsShooting()
+{
+}
+
+void ATP_ReseauCharacter::ServerSetIsShooting_Implementation(const bool value)
+{
+}
+
+bool ATP_ReseauCharacter::ServerSetIsShooting_Validate(const bool value)
+{
+	return true;
+}
+
 void ATP_ReseauCharacter::SetSkinIndex(int32 Index)
 {
 	if (HasAuthority())// If we are the server
@@ -264,6 +286,66 @@ void ATP_ReseauCharacter::OnRep_SkinIndex()
 	{
 		mesh->SetMaterial(0, SkinMaterials[SkinIndex]);
 	}
+}
+
+void ATP_ReseauCharacter::OnFire()
+{
+	FVector Start = GetActorLocation();
+	FVector End = Start + GetActorForwardVector()	* 10000.f; // Direction de visée
+	float ClientHitTime = GetWorld()->GetTimeSeconds() - ((GetPlayerState()->GetPingInMilliseconds() * 1000) / 2000.f); // Ping en secondes
+
+	// 3. Envoi au serveur
+	Server_SendShotRequest(Start, End, ClientHitTime);
+}
+
+void ATP_ReseauCharacter::Multicast_SpawnHitCapsule_Implementation(FVector Location)
+{
+	if (HasAuthority())
+	{
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+		AActor* Capsule = GetWorld()->SpawnActor<AActor>(BP_HitCapsule, Location, FRotator::ZeroRotator, SpawnParams);
+		if (Capsule)
+		{
+			Capsule->SetReplicates(true); // Répliquer la capsule sur tous les clients
+		}
+	} 
+}
+
+void ATP_ReseauCharacter::Server_SendShotRequest_Implementation(FVector_NetQuantize HitStart,
+                                                                FVector_NetQuantize HitEnd, float ClientHitTime)
+{
+	if (!HasAuthority()) return;
+
+	float ClientTimeStamp = GetWorld()->GetTimeSeconds();
+
+	// 1. Calcul du temps corrigé (ajustement pour le RTT)
+	float ServerTime = GetWorld()->GetTimeSeconds();
+	float AdjustedHitTime = ClientHitTime + (ServerTime - ClientTimeStamp);
+
+	// 2. Accéder au composant de lag compensation
+	ULagCompensationComponent* LagComp = FindComponentByClass<ULagCompensationComponent>();
+	if (!LagComp) return;
+
+	// 3. Rewind des positions des joueurs
+	bool bHitConfirmed = LagComp->ServerSideRewind(AdjustedHitTime, HitStart, HitEnd);
+
+	// 4. Si le raycast serveur confirme le hit, appliquer les dégâts
+	if (bHitConfirmed)
+	{
+		if(GEngine)
+			GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Hit"));
+
+		Multicast_SpawnHitCapsule(LagComp->HitLocation);
+	}
+}
+
+bool ATP_ReseauCharacter::Server_SendShotRequest_Validate(FVector_NetQuantize HitStart, FVector_NetQuantize HitEnd,
+	float ClientHitTime)
+{
+	return FMath::IsWithinInclusive(ClientHitTime, 0.f, static_cast<float>(GetWorld()->GetTimeSeconds()) + 1.f);
 }
 
 void ATP_ReseauCharacter::ServerSetSkinIndex_Implementation(int32 Index)

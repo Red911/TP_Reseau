@@ -9,7 +9,7 @@ void UNetworkGameInstanceSubSystem::HostGame()
 
 	if (PC)
 	{
-		PC->ClientTravel("/Game/Levels/Lobby?listen", TRAVEL_Absolute);
+		PC->ClientTravel("/Game/Levels/Level1?listen", TRAVEL_Absolute);
 	}
 	
 }

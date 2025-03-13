@@ -53,6 +53,8 @@ class ATP_ReseauCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* ShootingAction;
 
+	
+
 public:
 	ATP_ReseauCharacter();
 
@@ -61,14 +63,27 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	TArray<UMaterialInterface*> SkinMaterials;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AActor> Bullet;
+
+	UPROPERTY(EditAnywhere)
+	USceneComponent* ProjectileRoot;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UClass* BP_HitCapsule;
 	
 private:
 
 	UPROPERTY(ReplicatedUsing = OnRep_IsAiming)
 	bool bIsAiming;
 
+	UPROPERTY(ReplicatedUsing = OnRep_IsShooting)
+	bool isShooting;
+
 	UPROPERTY(ReplicatedUsing = OnRep_SkinIndex)
 	int32 SkinIndex = 0;
+
 	
 
 protected:
@@ -106,12 +121,23 @@ public:
 	UFUNCTION(BlueprintCallable, Category = Aiming)
 	FORCEINLINE void SetIsAiming(const bool value) { bIsAiming = value; }
 
+	UFUNCTION(BlueprintCallable, Category = Aiming)
+	FORCEINLINE bool GetIsShooting() const { return isShooting; }
+	UFUNCTION(BlueprintCallable, Category = Aiming)
+	FORCEINLINE void SetIsShooting(const bool value) { isShooting = value; }
+
 	// Server Function to set Aiming State
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerSetIsAiming(const bool value);
 
 	UFUNCTION()
 	void OnRep_IsAiming();
+
+	UFUNCTION()
+	void OnRep_IsShooting();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerSetIsShooting(const bool value);
 
 	UFUNCTION(BlueprintCallable)
 	void SetSkinIndex(int32 Index);
@@ -121,6 +147,19 @@ public:
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerSetSkinIndex(int32 Index);
+
+	UFUNCTION(BlueprintCallable)
+	void OnFire();
+	
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_SendShotRequest(FVector_NetQuantize HitStart, FVector_NetQuantize HitEnd, float ClientHitTime);
+
+	UFUNCTION(NetMulticast, Reliable)  
+	void Multicast_SpawnHitCapsule(FVector Location);  
+
+	
+
+	
 	
 
 
