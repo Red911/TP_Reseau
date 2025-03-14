@@ -91,13 +91,10 @@ void ATP_ReseauCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// if (isShooting)
-	// {
-	// 	FVector Location = ProjectileRoot->GetRelativeLocation();
-	// 	FRotator Rotation = FRotator::ZeroRotator;
-	// 	FActorSpawnParameters SpawnParams;
-	// 	GetWorld()->SpawnActor<AActor>(Bullet, Location, Rotation, SpawnParams);
-	// }
+	if (WantSpawnCapsule)
+	{
+		Multicast_SpawnHitCapsule(GetActorLocation(), BP_HitCapsule_Red);
+	}
 	
 }
 
@@ -292,13 +289,17 @@ void ATP_ReseauCharacter::OnFire()
 {
 	FVector Start = GetActorLocation();
 	FVector End = Start + GetActorForwardVector()	* 10000.f; // Direction de visée
-	float ClientHitTime = GetWorld()->GetTimeSeconds() - ((GetPlayerState()->GetPingInMilliseconds() * 1000) / 2000.f); // Ping en secondes
+	float ClientHitTime = GetWorld()->GetTimeSeconds() - ((GetPlayerState()->GetPingInMilliseconds()) / 2000.f); // Ping en secondes
 
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (!PlayerController)
+		return;
+	
 	// 3. Envoi au serveur
 	Server_SendShotRequest(Start, End, ClientHitTime);
 }
 
-void ATP_ReseauCharacter::Multicast_SpawnHitCapsule_Implementation(FVector Location)
+void ATP_ReseauCharacter::Multicast_SpawnHitCapsule_Implementation(FVector Location, UClass* Bp)
 {
 	if (HasAuthority())
 	{
@@ -306,10 +307,11 @@ void ATP_ReseauCharacter::Multicast_SpawnHitCapsule_Implementation(FVector Locat
 		SpawnParams.Owner = this;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-		AActor* Capsule = GetWorld()->SpawnActor<AActor>(BP_HitCapsule, Location, FRotator::ZeroRotator, SpawnParams);
+		Capsule = GetWorld()->SpawnActor<AActor>(Bp, Location, FRotator::ZeroRotator, SpawnParams);
 		if (Capsule)
 		{
 			Capsule->SetReplicates(true); // Répliquer la capsule sur tous les clients
+			
 		}
 	} 
 }
@@ -317,7 +319,12 @@ void ATP_ReseauCharacter::Multicast_SpawnHitCapsule_Implementation(FVector Locat
 void ATP_ReseauCharacter::Server_SendShotRequest_Implementation(FVector_NetQuantize HitStart,
                                                                 FVector_NetQuantize HitEnd, float ClientHitTime)
 {
-	if (!HasAuthority()) return;
+	//if (!HasAuthority()) return;
+
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (!PlayerController)
+		return;
+	
 
 	float ClientTimeStamp = GetWorld()->GetTimeSeconds();
 
@@ -338,14 +345,16 @@ void ATP_ReseauCharacter::Server_SendShotRequest_Implementation(FVector_NetQuant
 		if(GEngine)
 			GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Hit"));
 
-		Multicast_SpawnHitCapsule(LagComp->HitLocation);
+		Multicast_SpawnHitCapsule(LagComp->HitLocation, BP_HitCapsule_Green);
+		
 	}
 }
 
 bool ATP_ReseauCharacter::Server_SendShotRequest_Validate(FVector_NetQuantize HitStart, FVector_NetQuantize HitEnd,
 	float ClientHitTime)
 {
-	return FMath::IsWithinInclusive(ClientHitTime, 0.f, static_cast<float>(GetWorld()->GetTimeSeconds()) + 1.f);
+	//return FMath::IsWithinInclusive(ClientHitTime, 0.f, static_cast<float>(GetWorld()->GetTimeSeconds()) + 1.f);
+	return true;
 }
 
 void ATP_ReseauCharacter::ServerSetSkinIndex_Implementation(int32 Index)

@@ -71,7 +71,14 @@ public:
 	USceneComponent* ProjectileRoot;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UClass* BP_HitCapsule;
+	UClass* BP_HitCapsule_Red;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UClass* BP_HitCapsule_Green;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool WantSpawnCapsule = true;
+	
 	
 private:
 
@@ -84,7 +91,7 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_SkinIndex)
 	int32 SkinIndex = 0;
 
-	
+	AActor* Capsule;
 
 protected:
 
@@ -155,7 +162,7 @@ public:
 	void Server_SendShotRequest(FVector_NetQuantize HitStart, FVector_NetQuantize HitEnd, float ClientHitTime);
 
 	UFUNCTION(NetMulticast, Reliable)  
-	void Multicast_SpawnHitCapsule(FVector Location);  
+	void Multicast_SpawnHitCapsule(FVector Location, UClass* Bp);  
 
 	
 

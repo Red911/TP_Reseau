@@ -32,14 +32,11 @@ void ULagCompensationComponent::TickComponent(float DeltaTime, ELevelTick TickTy
                                               FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	if (GetOwner()->HasAuthority())
-	{
-		FSavedMove NewMove;
-		NewMove.CapsuleTransform = GetOwner()->GetActorTransform();
-		NewMove.Timestamp = GetWorld()->GetTimeSeconds();
-		SavedMoves.Add(NewMove);
-	}
+	
+	FSavedMove NewMove;
+	NewMove.CapsuleTransform = GetOwner()->GetActorTransform();
+	NewMove.Timestamp = GetWorld()->GetTimeSeconds();
+	SavedMoves.Add(NewMove);
 }
 
 void ULagCompensationComponent::ApplyTransform(const FTransform& NewTransform)
@@ -71,8 +68,8 @@ bool ULagCompensationComponent::PerformRaycast(const FVector& Start, const FVect
 			Start,
 			End,
 			FColor(255, 0, 0),
-			true, -1, 0,
-			12.333
+			false, 3, 0,
+			6.0
 		);
 
 	// Vérifier si le raycast a touché un adversaire
